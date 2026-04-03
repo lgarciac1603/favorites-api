@@ -10,6 +10,14 @@ import (
 
 var DB *sql.DB
 
+// DatabaseInterface define mock operations
+type DatabaseInterface interface {
+	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryRow(query string, args ...interface{}) *sql.Row
+	Exec(query string, args ...interface{}) (sql.Result, error)
+}
+
+// InitDB init DB connection
 func InitDB(cfg config.DatabaseConfig) error {
 	connStr := cfg.GetConnectionString()
 	

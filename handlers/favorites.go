@@ -1,14 +1,25 @@
 package handlers
 
 import (
+	"database/sql"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/lgarciac1603/favorites-api/database"
 	"github.com/lgarciac1603/favorites-api/models"
 )
 
-func GetFavorites(c *gin.Context) {
+// FavoritesHandler encapsula los handlers de favoritos
+type FavoritesHandler struct {
+	DB *sql.DB
+}
+
+// NewFavoritesHandler crea un nuevo handler
+func NewFavoritesHandler(db *sql.DB) *FavoritesHandler {
+	return &FavoritesHandler{DB: db}
+}
+
+// GetFavorites obtiene todos los favoritos del usuario
+func (h *FavoritesHandler) GetFavorites(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(401, gin.H{"error": "Usuario no autenticado"})
@@ -24,7 +35,7 @@ func GetFavorites(c *gin.Context) {
 		ORDER BY created_at DESC
 	`
 
-	rows, err := database.DB.Query(query, userIDInt)
+	rows, err := h.DB.Query(query, userIDInt)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Error consultando BD"})
 		return
@@ -53,7 +64,8 @@ func GetFavorites(c *gin.Context) {
 	})
 }
 
-func PostFavorite(c *gin.Context) {
+// Adds crypto to favorite
+func (h *FavoritesHandler) PostFavorite(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(401, gin.H{"error": "Usuario no autenticado"})
@@ -74,7 +86,7 @@ func PostFavorite(c *gin.Context) {
 
 	checkQuery := `SELECT id FROM user_favorites WHERE user_id = $1 AND crypto_id = $2`
 	var existingID int
-	err := database.DB.QueryRow(checkQuery, userIDInt, requestBody.CryptoID).Scan(&existingID)
+	err := h.DB.QueryRow(checkQuery, userIDInt, requestBody.CryptoID).Scan(&existingID)
 
 	if err == nil {
 		c.JSON(409, gin.H{"error": "Esta crypto ya está en favoritos"})
@@ -90,7 +102,7 @@ func PostFavorite(c *gin.Context) {
 	var newFavorite models.Favorite
 	createdAt := time.Now().Format(time.RFC3339)
 
-	err = database.DB.QueryRow(
+	err = h.DB.QueryRow(
 		insertQuery,
 		userIDInt,
 		requestBody.CryptoID,
@@ -115,7 +127,8 @@ func PostFavorite(c *gin.Context) {
 	})
 }
 
-func DeleteFavorite(c *gin.Context) {
+// Delete from favorites
+func (h *FavoritesHandler) DeleteFavorite(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(401, gin.H{"error": "Usuario no autenticado"})
@@ -123,7 +136,6 @@ func DeleteFavorite(c *gin.Context) {
 	}
 
 	userIDInt := userID.(int)
-
 	cryptoID := c.Param("cryptoId")
 
 	if cryptoID == "" {
@@ -136,7 +148,7 @@ func DeleteFavorite(c *gin.Context) {
 		WHERE user_id = $1 AND crypto_id = $2
 	`
 
-	result, err := database.DB.Exec(deleteQuery, userIDInt, cryptoID)
+	result, err := h.DB.Exec(deleteQuery, userIDInt, cryptoID)
 	if err != nil {
 		c.JSON(500, gin.H{"error": "Error eliminando de BD"})
 		return
