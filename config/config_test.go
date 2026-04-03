@@ -62,7 +62,7 @@ func (suite *ConfigTestSuite) TestLoadConfig_WithDefaults() {
 	cfg := LoadConfig()
 
 	assert.Equal(suite.T(), "localhost", cfg.Host)
-	assert.Equal(suite.T(), "5432", cfg.Port)
+	assert.Equal(suite.T(), "8090", cfg.Port)
 	assert.Equal(suite.T(), "apidb", cfg.Database)
 	assert.Equal(suite.T(), "apiuser_test", cfg.User)
 	assert.Equal(suite.T(), "apipass_test", cfg.Password)
@@ -72,7 +72,7 @@ func (suite *ConfigTestSuite) TestLoadConfig_WithDefaults() {
 func (suite *ConfigTestSuite) TestGetConnectionString() {
 	cfg := DatabaseConfig{
 		Host:     "localhost",
-		Port:     "5432",
+		Port:     "8090",
 		Database: "testdb",
 		User:     "testuser",
 		Password: "testpass",
@@ -80,7 +80,7 @@ func (suite *ConfigTestSuite) TestGetConnectionString() {
 
 	connStr := cfg.GetConnectionString()
 
-	expected := "host=localhost port=5432 user=testuser password=testpass dbname=testdb sslmode=disable"
+	expected := "host=localhost port=8090 user=testuser password=testpass dbname=testdb sslmode=disable"
 	assert.Equal(suite.T(), expected, connStr)
 }
 

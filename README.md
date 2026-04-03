@@ -41,15 +41,15 @@ The service validates incoming Bearer tokens by delegating to the primary API or
 
 ## Technology Stack
 
-| Component         | Technology                                 | Version   |
-|-------------------|--------------------------------------------|-----------|
-| Language          | Go                                         | 1.26.1    |
-| HTTP Framework    | Gin (`github.com/gin-gonic/gin`)           | 1.12.0    |
-| PostgreSQL Driver | lib/pq (`github.com/lib/pq`)               | 1.12.2    |
-| Testing Framework | Testify (`github.com/stretchr/testify`)    | 1.11.1    |
-| Database Mocking  | go-sqlmock (`github.com/DATA-DOG/go-sqlmock`) | 1.5.2  |
-| Container Runtime | Docker                                     | 26+       |
-| Database          | PostgreSQL                                 | 16        |
+| Component         | Technology                                    | Version |
+| ----------------- | --------------------------------------------- | ------- |
+| Language          | Go                                            | 1.26.1  |
+| HTTP Framework    | Gin (`github.com/gin-gonic/gin`)              | 1.12.0  |
+| PostgreSQL Driver | lib/pq (`github.com/lib/pq`)                  | 1.12.2  |
+| Testing Framework | Testify (`github.com/stretchr/testify`)       | 1.11.1  |
+| Database Mocking  | go-sqlmock (`github.com/DATA-DOG/go-sqlmock`) | 1.5.2   |
+| Container Runtime | Docker                                        | 26+     |
+| Database          | PostgreSQL                                    | 16      |
 
 ---
 
@@ -86,20 +86,20 @@ If you intend to run against a local PostgreSQL instance, create the `user_favor
 
 The application reads all configuration from environment variables. Defaults are provided for local development.
 
-| Variable  | Default         | Description                              |
-|-----------|-----------------|------------------------------------------|
-| `DB_HOST` | `localhost`     | PostgreSQL host                          |
-| `DB_PORT` | `5432`          | PostgreSQL port                          |
-| `DB_NAME` | `apidb`         | Target database name                     |
-| `DB_USER` | `apiuser_test`  | Database user                            |
-| `DB_PASS` | `apipass_test`  | Database password                        |
-| `APP_PORT`| `8090`          | HTTP port the server listens on          |
+| Variable   | Default        | Description                     |
+| ---------- | -------------- | ------------------------------- |
+| `DB_HOST`  | `localhost`    | PostgreSQL host                 |
+| `DB_PORT`  | `8090`         | PostgreSQL port                 |
+| `DB_NAME`  | `apidb`        | Target database name            |
+| `DB_USER`  | `apiuser_test` | Database user                   |
+| `DB_PASS`  | `apipass_test` | Database password               |
+| `APP_PORT` | `8090`         | HTTP port the server listens on |
 
 For local development, create a `.env` file (not committed to source control) or export each variable in your shell:
 
 ```bash
 export DB_HOST=localhost
-export DB_PORT=5432
+export DB_PORT=8090
 export DB_NAME=apidb
 export DB_USER=apiuser_test
 export DB_PASS=apipass_test
@@ -218,8 +218,8 @@ const response = await fetch("http://localhost:8090/favorites", {
 });
 
 const body = await response.json();
-console.log(body.data);   // Favorite[]
-console.log(body.total);  // number
+console.log(body.data); // Favorite[]
+console.log(body.total); // number
 ```
 
 ---
@@ -239,7 +239,7 @@ Content-Type: application/json
 **Request Body**
 
 | Field        | Type   | Required | Description                            |
-|--------------|--------|----------|----------------------------------------|
+| ------------ | ------ | -------- | -------------------------------------- |
 | `cryptoId`   | string | Yes      | Unique identifier (e.g. `"bitcoin"`)   |
 | `cryptoName` | string | Yes      | Human-readable name (e.g. `"Bitcoin"`) |
 
@@ -309,9 +309,9 @@ Authorization: Bearer <token>
 
 **Path Parameter**
 
-| Parameter  | Type   | Description                               |
-|------------|--------|-------------------------------------------|
-| `cryptoId` | string | The ID of the cryptocurrency to remove    |
+| Parameter  | Type   | Description                            |
+| ---------- | ------ | -------------------------------------- |
+| `cryptoId` | string | The ID of the cryptocurrency to remove |
 
 **Response — 200 OK**
 
@@ -345,15 +345,15 @@ const body = await response.json();
 
 ### HTTP Status Codes
 
-| Code | Meaning                                                              |
-|------|----------------------------------------------------------------------|
-| 200  | Request succeeded (GET, DELETE)                                      |
-| 201  | Resource created (POST)                                              |
-| 400  | Bad request — missing or invalid request body or path parameter      |
-| 401  | Unauthorized — missing, malformed, or invalid Bearer token           |
-| 404  | Not found — the specified favorite does not exist for this user      |
-| 409  | Conflict — the cryptocurrency is already in the user's favorites     |
-| 500  | Internal server error — database query or scan failure               |
+| Code | Meaning                                                          |
+| ---- | ---------------------------------------------------------------- |
+| 200  | Request succeeded (GET, DELETE)                                  |
+| 201  | Resource created (POST)                                          |
+| 400  | Bad request — missing or invalid request body or path parameter  |
+| 401  | Unauthorized — missing, malformed, or invalid Bearer token       |
+| 404  | Not found — the specified favorite does not exist for this user  |
+| 409  | Conflict — the cryptocurrency is already in the user's favorites |
+| 500  | Internal server error — database query or scan failure           |
 
 ---
 
@@ -364,7 +364,7 @@ const body = await response.json();
 ```bash
 # Set environment variables (or rely on defaults)
 export DB_HOST=localhost
-export DB_PORT=5432
+export DB_PORT=8090
 export DB_NAME=apidb
 export DB_USER=apiuser_test
 export DB_PASS=apipass_test
@@ -424,13 +424,13 @@ All tests follow the **Table-Driven Test** pattern and are organized into suites
 
 ### Test Files and Coverage
 
-| Package                | Test File                       | Test Cases | Coverage |
-|------------------------|---------------------------------|-----------|---------|
-| `config`               | `config/config_test.go`         | 5         | 100.0%  |
-| `database`             | `database/database_test.go`     | 4         | 92.3%   |
-| `handlers`             | `handlers/favorites_test.go`    | 18        | 96.9%   |
-| `middleware`           | `middleware/auth_test.go`       | 8         | 100.0%  |
-| `models`               | `models/favorite_test.go`       | 5         | N/A (no statements) |
+| Package      | Test File                    | Test Cases | Coverage            |
+| ------------ | ---------------------------- | ---------- | ------------------- |
+| `config`     | `config/config_test.go`      | 5          | 100.0%              |
+| `database`   | `database/database_test.go`  | 4          | 92.3%               |
+| `handlers`   | `handlers/favorites_test.go` | 18         | 96.9%               |
+| `middleware` | `middleware/auth_test.go`    | 8          | 100.0%              |
+| `models`     | `models/favorite_test.go`    | 5          | N/A (no statements) |
 
 > Note: The `database` package tests require a reachable PostgreSQL instance with the credentials defined in the [Configuration](#configuration) section. Tests for the remaining packages run fully offline.
 
@@ -657,23 +657,23 @@ CREATE TABLE IF NOT EXISTS user_favorites (
 );
 ```
 
-| Column       | Type         | Constraints                              | Description                          |
-|--------------|--------------|------------------------------------------|--------------------------------------|
-| `id`         | SERIAL       | PRIMARY KEY                              | Auto-incrementing row identifier     |
-| `user_id`    | INTEGER      | NOT NULL                                 | References the authenticated user    |
-| `crypto_id`  | VARCHAR(100) | NOT NULL                                 | Cryptocurrency identifier (e.g. `bitcoin`) |
-| `crypto_name`| VARCHAR(255) | NOT NULL                                 | Human-readable name (e.g. `Bitcoin`) |
-| `created_at` | TIMESTAMP    | NOT NULL, DEFAULT CURRENT_TIMESTAMP      | Row creation timestamp               |
+| Column        | Type         | Constraints                         | Description                                |
+| ------------- | ------------ | ----------------------------------- | ------------------------------------------ |
+| `id`          | SERIAL       | PRIMARY KEY                         | Auto-incrementing row identifier           |
+| `user_id`     | INTEGER      | NOT NULL                            | References the authenticated user          |
+| `crypto_id`   | VARCHAR(100) | NOT NULL                            | Cryptocurrency identifier (e.g. `bitcoin`) |
+| `crypto_name` | VARCHAR(255) | NOT NULL                            | Human-readable name (e.g. `Bitcoin`)       |
+| `created_at`  | TIMESTAMP    | NOT NULL, DEFAULT CURRENT_TIMESTAMP | Row creation timestamp                     |
 
 The `UNIQUE (user_id, crypto_id)` constraint prevents duplicate entries at the database level, complementing the application-level `409 Conflict` check in `PostFavorite`.
 
 **Sample Data**
 
-| id | user_id | crypto_id | crypto_name | created_at               |
-|----|---------|-----------|-------------|--------------------------|
-| 1  | 1       | bitcoin   | Bitcoin     | 2026-04-02 10:30:00      |
-| 2  | 1       | ethereum  | Ethereum    | 2026-04-02 10:35:00      |
-| 3  | 2       | solana    | Solana      | 2026-04-02 11:00:00      |
+| id  | user_id | crypto_id | crypto_name | created_at          |
+| --- | ------- | --------- | ----------- | ------------------- |
+| 1   | 1       | bitcoin   | Bitcoin     | 2026-04-02 10:30:00 |
+| 2   | 1       | ethereum  | Ethereum    | 2026-04-02 10:35:00 |
+| 3   | 2       | solana    | Solana      | 2026-04-02 11:00:00 |
 
 ---
 
@@ -750,15 +750,15 @@ This project follows the [Conventional Commits](https://www.conventionalcommits.
 <type>(<scope>): <short summary>
 ```
 
-| Type       | When to use                                                    |
-|------------|----------------------------------------------------------------|
-| `feat`     | A new feature                                                  |
-| `fix`      | A bug fix                                                      |
-| `docs`     | Documentation changes only                                     |
-| `test`     | Adding or correcting tests                                     |
-| `refactor` | Code change that neither fixes a bug nor adds a feature        |
-| `chore`    | Dependency updates, build configuration, tooling               |
-| `perf`     | Performance improvement                                        |
+| Type       | When to use                                             |
+| ---------- | ------------------------------------------------------- |
+| `feat`     | A new feature                                           |
+| `fix`      | A bug fix                                               |
+| `docs`     | Documentation changes only                              |
+| `test`     | Adding or correcting tests                              |
+| `refactor` | Code change that neither fixes a bug nor adds a feature |
+| `chore`    | Dependency updates, build configuration, tooling        |
+| `perf`     | Performance improvement                                 |
 
 Examples:
 
@@ -793,15 +793,15 @@ Repository: [https://github.com/lgarciac1603/favorites-api](https://github.com/l
 
 ## Roadmap
 
-| Item                                  | Status      |
-|---------------------------------------|-------------|
-| Core CRUD endpoints (GET, POST, DELETE) | Done      |
-| PostgreSQL integration                | Done        |
-| Testify-based test suite              | Done        |
-| Docker Compose setup                  | Done        |
-| Real JWT validation via cpp-rest-api  | Pending     |
-| Pagination for GET /favorites         | Pending     |
-| Rate limiting                         | Pending     |
-| OpenAPI / Swagger documentation       | Pending     |
-| GitHub Actions CI pipeline            | Pending     |
-| Kubernetes deployment manifests       | Pending     |
+| Item                                    | Status  |
+| --------------------------------------- | ------- |
+| Core CRUD endpoints (GET, POST, DELETE) | Done    |
+| PostgreSQL integration                  | Done    |
+| Testify-based test suite                | Done    |
+| Docker Compose setup                    | Done    |
+| Real JWT validation via cpp-rest-api    | Pending |
+| Pagination for GET /favorites           | Pending |
+| Rate limiting                           | Pending |
+| OpenAPI / Swagger documentation         | Pending |
+| GitHub Actions CI pipeline              | Pending |
+| Kubernetes deployment manifests         | Pending |

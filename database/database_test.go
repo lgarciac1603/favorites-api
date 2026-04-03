@@ -16,7 +16,7 @@ type DatabaseTestSuite struct {
 func (suite *DatabaseTestSuite) TestInitDB_ValidConnection() {
 	cfg := config.DatabaseConfig{
 		Host:     "localhost",
-		Port:     "5432",
+		Port:     "8090",
 		Database: "apidb",
 		User:     "apiuser_test",
 		Password: "apipass_test",
@@ -33,7 +33,7 @@ func (suite *DatabaseTestSuite) TestInitDB_ValidConnection() {
 func (suite *DatabaseTestSuite) TestInitDB_InvalidHost() {
 	cfg := config.DatabaseConfig{
 		Host:     "invalid-host-xyz-123",
-		Port:     "5432",
+		Port:     "8090",
 		Database: "apidb",
 		User:     "apiuser_test",
 		Password: "apipass_test",
@@ -48,7 +48,7 @@ func (suite *DatabaseTestSuite) TestInitDB_InvalidHost() {
 func (suite *DatabaseTestSuite) TestInitDB_InvalidPassword() {
 	cfg := config.DatabaseConfig{
 		Host:     "localhost",
-		Port:     "5432",
+		Port:     "8090",
 		Database: "apidb",
 		User:     "apiuser_test",
 		Password: "wrong-password",
