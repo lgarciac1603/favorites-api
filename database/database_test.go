@@ -1,3 +1,4 @@
+// database/database_test.go
 package database
 
 import (
@@ -41,7 +42,7 @@ func (suite *DatabaseTestSuite) TestInitDB_InvalidHost() {
 	err := InitDB(cfg)
 
 	assert.Error(suite.T(), err)
-	assert.Contains(suite.T(), err.Error(), "conectando a BD")
+	assert.Contains(suite.T(), err.Error(), "error connecting to database")
 }
 
 func (suite *DatabaseTestSuite) TestInitDB_InvalidPassword() {
@@ -60,14 +61,11 @@ func (suite *DatabaseTestSuite) TestInitDB_InvalidPassword() {
 
 func (suite *DatabaseTestSuite) TestCloseDB_NoConnection() {
 	DB = nil
+
 	err := CloseDB()
+
 	assert.NoError(suite.T(), err)
 }
-
-// TODO: fix later this test
-/*func (suite *DatabaseTestSuite) TestDatabaseInterface_Methods() {
-	var _ DatabaseInterface = (*Database)(nil) // Compilará si implementa la interfaz
-}*/
 
 func TestDatabaseTestSuite(t *testing.T) {
 	suite.Run(t, new(DatabaseTestSuite))

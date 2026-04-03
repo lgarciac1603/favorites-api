@@ -1,3 +1,4 @@
+// database/database.go
 package database
 
 import (
@@ -10,32 +11,27 @@ import (
 
 var DB *sql.DB
 
-// DatabaseInterface define mock operations
-type DatabaseInterface interface {
-	Query(query string, args ...interface{}) (*sql.Rows, error)
-	QueryRow(query string, args ...interface{}) *sql.Row
-	Exec(query string, args ...interface{}) (sql.Result, error)
-}
-
-// InitDB init DB connection
+// InitDB initializes the connection to PostgreSQL
 func InitDB(cfg config.DatabaseConfig) error {
 	connStr := cfg.GetConnectionString()
 	
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
-		return fmt.Errorf("error abriendo BD: %w", err)
+		return fmt.Errorf("error opening database: %w", err)
 	}
 	
+	// Verify that the connection is valid
 	err = db.Ping()
 	if err != nil {
-		return fmt.Errorf("error conectando a BD: %w", err)
+		return fmt.Errorf("error connecting to database: %w", err)
 	}
 	
 	DB = db
-	fmt.Println("✓ Conectado a PostgreSQL exitosamente")
+	fmt.Println("Successfully connected to PostgreSQL")
 	return nil
 }
 
+// CloseDB closes the database connection
 func CloseDB() error {
 	if DB != nil {
 		return DB.Close()

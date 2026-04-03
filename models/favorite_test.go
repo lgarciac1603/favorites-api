@@ -1,3 +1,4 @@
+// models/favorite_test.go
 package models
 
 import (

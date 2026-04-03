@@ -8,21 +8,21 @@ import (
 	"github.com/lgarciac1603/favorites-api/models"
 )
 
-// FavoritesHandler encapsula los handlers de favoritos
+// FavoritesHandler encapsulates favorite handlers
 type FavoritesHandler struct {
 	DB *sql.DB
 }
 
-// NewFavoritesHandler crea un nuevo handler
+// NewFavoritesHandler creates a new handler
 func NewFavoritesHandler(db *sql.DB) *FavoritesHandler {
 	return &FavoritesHandler{DB: db}
 }
 
-// GetFavorites obtiene todos los favoritos del usuario
+// GetFavorites retrieves all favorites for the authenticated user
 func (h *FavoritesHandler) GetFavorites(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(401, gin.H{"error": "Usuario no autenticado"})
+		c.JSON(401, gin.H{"error": "User not authenticated"})
 		return
 	}
 
@@ -37,7 +37,7 @@ func (h *FavoritesHandler) GetFavorites(c *gin.Context) {
 
 	rows, err := h.DB.Query(query, userIDInt)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Error consultando BD"})
+		c.JSON(500, gin.H{"error": "Error querying database"})
 		return
 	}
 	defer rows.Close()
@@ -48,7 +48,7 @@ func (h *FavoritesHandler) GetFavorites(c *gin.Context) {
 		var fav models.Favorite
 		err := rows.Scan(&fav.ID, &fav.UserID, &fav.CryptoID, &fav.CryptoName, &fav.CreatedAt)
 		if err != nil {
-			c.JSON(500, gin.H{"error": "Error leyendo datos"})
+			c.JSON(500, gin.H{"error": "Error reading data"})
 			return
 		}
 		favorites = append(favorites, fav)
@@ -64,11 +64,11 @@ func (h *FavoritesHandler) GetFavorites(c *gin.Context) {
 	})
 }
 
-// Adds crypto to favorite
+// PostFavorite adds a cryptocurrency to user's favorites
 func (h *FavoritesHandler) PostFavorite(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(401, gin.H{"error": "Usuario no autenticado"})
+		c.JSON(401, gin.H{"error": "User not authenticated"})
 		return
 	}
 
@@ -80,7 +80,7 @@ func (h *FavoritesHandler) PostFavorite(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&requestBody); err != nil {
-		c.JSON(400, gin.H{"error": "CryptoID y CryptoName son requeridos"})
+		c.JSON(400, gin.H{"error": "CryptoID and CryptoName are required"})
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *FavoritesHandler) PostFavorite(c *gin.Context) {
 	err := h.DB.QueryRow(checkQuery, userIDInt, requestBody.CryptoID).Scan(&existingID)
 
 	if err == nil {
-		c.JSON(409, gin.H{"error": "Esta crypto ya está en favoritos"})
+		c.JSON(409, gin.H{"error": "This crypto is already in favorites"})
 		return
 	}
 
@@ -117,21 +117,21 @@ func (h *FavoritesHandler) PostFavorite(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Error insertando en BD"})
+		c.JSON(500, gin.H{"error": "Error inserting into database"})
 		return
 	}
 
 	c.JSON(201, gin.H{
-		"message": "Crypto añadida a favoritos",
+		"message": "Crypto added to favorites",
 		"data":    newFavorite,
 	})
 }
 
-// Delete from favorites
+// DeleteFavorite removes a cryptocurrency from user's favorites
 func (h *FavoritesHandler) DeleteFavorite(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
-		c.JSON(401, gin.H{"error": "Usuario no autenticado"})
+		c.JSON(401, gin.H{"error": "User not authenticated"})
 		return
 	}
 
@@ -139,7 +139,7 @@ func (h *FavoritesHandler) DeleteFavorite(c *gin.Context) {
 	cryptoID := c.Param("cryptoId")
 
 	if cryptoID == "" {
-		c.JSON(400, gin.H{"error": "CryptoId es requerido"})
+		c.JSON(400, gin.H{"error": "CryptoId is required"})
 		return
 	}
 
@@ -150,17 +150,17 @@ func (h *FavoritesHandler) DeleteFavorite(c *gin.Context) {
 
 	result, err := h.DB.Exec(deleteQuery, userIDInt, cryptoID)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Error eliminando de BD"})
+		c.JSON(500, gin.H{"error": "Error deleting from database"})
 		return
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil || rowsAffected == 0 {
-		c.JSON(404, gin.H{"error": "Crypto no encontrada en favoritos"})
+		c.JSON(404, gin.H{"error": "Crypto not found in favorites"})
 		return
 	}
 
 	c.JSON(200, gin.H{
-		"message": "Crypto eliminada de favoritos",
+		"message": "Crypto removed from favorites",
 	})
 }

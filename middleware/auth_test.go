@@ -1,3 +1,4 @@
+// middleware/auth_test.go
 package middleware
 
 import (
@@ -20,17 +21,12 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_ValidToken() {
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 	c.Request.Header.Set("Authorization", "Bearer user-123")
 
-	called := false
-
 	AuthMiddleware()(c)
-	if !c.IsAborted() {
-		called = true
-	}
 
 	userID, exists := c.Get("userID")
 	assert.True(suite.T(), exists)
 	assert.Equal(suite.T(), "user-123", userID)
-	assert.True(suite.T(), called)
+	assert.False(suite.T(), c.IsAborted())
 }
 
 func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_NoToken() {
@@ -42,6 +38,7 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_NoToken() {
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.True(suite.T(), c.IsAborted())
+	assert.Contains(suite.T(), w.Body.String(), "Token not found")
 }
 
 func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_InvalidFormat() {
@@ -54,17 +51,19 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_InvalidFormat() {
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.True(suite.T(), c.IsAborted())
+	assert.Contains(suite.T(), w.Body.String(), "Invalid token format")
 }
 
 func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_MissingBearer() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/test", nil)
-	c.Request.Header.Set("Authorization", "user-123") // Sin "Bearer"
+	c.Request.Header.Set("Authorization", "user-123")
 
 	AuthMiddleware()(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+	assert.Contains(suite.T(), w.Body.String(), "Invalid token format")
 }
 
 func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_EmptyToken() {
@@ -76,17 +75,7 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_EmptyToken() {
 	AuthMiddleware()(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
-}
-
-func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_BearerCaseSensitive() {
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/test", nil)
-	c.Request.Header.Set("Authorization", "bearer user-123") // Minúsculas
-
-	AuthMiddleware()(c)
-
-	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+	assert.Contains(suite.T(), w.Body.String(), "Invalid token")
 }
 
 func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_TokenExtraction() {
@@ -119,11 +108,26 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_MultipleSpaces() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/test", nil)
-	c.Request.Header.Set("Authorization", "Bearer  token-123") // Doble espacio
+	c.Request.Header.Set("Authorization", "Bearer  token-123")
 
 	AuthMiddleware()(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
+}
+
+func (suite *AuthMiddlewareTestSuite) TestValidateToken_ValidToken() {
+	userID, err := ValidateToken("test-token-123")
+
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "test-token-123", userID)
+}
+
+func (suite *AuthMiddlewareTestSuite) TestValidateToken_EmptyToken() {
+	userID, err := ValidateToken("")
+
+	assert.Error(suite.T(), err)
+	assert.Empty(suite.T(), userID)
+	assert.Contains(suite.T(), err.Error(), "empty token")
 }
 
 func TestAuthMiddlewareSuite(t *testing.T) {

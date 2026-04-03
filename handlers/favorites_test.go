@@ -22,7 +22,6 @@ type FavoritesHandlerTestSuite struct {
 	mockDB  *sql.DB
 }
 
-// before test setup
 func (suite *FavoritesHandlerTestSuite) SetupTest() {
 	var err error
 	suite.mockDB, suite.db, err = sqlmock.New()
@@ -31,7 +30,6 @@ func (suite *FavoritesHandlerTestSuite) SetupTest() {
 	suite.handler = NewFavoritesHandler(suite.mockDB)
 }
 
-// Close mock connection
 func (suite *FavoritesHandlerTestSuite) TeardownTest() {
 	suite.mockDB.Close()
 }
@@ -90,13 +88,14 @@ func (suite *FavoritesHandlerTestSuite) TestGetFavorites_Empty() {
 func (suite *FavoritesHandlerTestSuite) TestGetFavorites_NoAuth() {
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
+
 	suite.handler.GetFavorites(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "Usuario no autenticado", response["error"])
+	assert.Equal(suite.T(), "User not authenticated", response["error"])
 }
 
 func (suite *FavoritesHandlerTestSuite) TestGetFavorites_DBError() {
@@ -116,7 +115,7 @@ func (suite *FavoritesHandlerTestSuite) TestGetFavorites_DBError() {
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "Error consultando BD", response["error"])
+	assert.Equal(suite.T(), "Error querying database", response["error"])
 }
 
 // ==================== POST /favorites ====================
@@ -154,7 +153,7 @@ func (suite *FavoritesHandlerTestSuite) TestPostFavorite_Success() {
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "Crypto añadida a favoritos", response["message"])
+	assert.Equal(suite.T(), "Crypto added to favorites", response["message"])
 	assert.NoError(suite.T(), suite.db.ExpectationsWereMet())
 }
 
@@ -184,7 +183,7 @@ func (suite *FavoritesHandlerTestSuite) TestPostFavorite_AlreadyExists() {
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "Esta crypto ya está en favoritos", response["error"])
+	assert.Equal(suite.T(), "This crypto is already in favorites", response["error"])
 }
 
 func (suite *FavoritesHandlerTestSuite) TestPostFavorite_MissingCryptoId() {
@@ -201,11 +200,12 @@ func (suite *FavoritesHandlerTestSuite) TestPostFavorite_MissingCryptoId() {
 	c.Set("userID", userID)
 
 	suite.handler.PostFavorite(c)
+
 	assert.Equal(suite.T(), http.StatusBadRequest, w.Code)
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Contains(suite.T(), response["error"].(string), "requerido")
+	assert.Contains(suite.T(), response["error"].(string), "required")
 }
 
 func (suite *FavoritesHandlerTestSuite) TestPostFavorite_MissingCryptoName() {
@@ -246,12 +246,14 @@ func (suite *FavoritesHandlerTestSuite) TestPostFavorite_NoAuth() {
 		"cryptoName": "Bitcoin",
 	}
 	bodyBytes, _ := json.Marshal(body)
+
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("POST", "/favorites", bytes.NewBuffer(bodyBytes))
 	c.Request.Header.Set("Content-Type", "application/json")
 
 	suite.handler.PostFavorite(c)
+
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 }
 
@@ -285,6 +287,7 @@ func (suite *FavoritesHandlerTestSuite) TestPostFavorite_DBInsertError() {
 }
 
 // ==================== DELETE /favorites/{cryptoId} ====================
+
 func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_Success() {
 	userID := 1
 	cryptoID := "bitcoin"
@@ -304,7 +307,7 @@ func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_Success() {
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "Crypto eliminada de favoritos", response["message"])
+	assert.Equal(suite.T(), "Crypto removed from favorites", response["message"])
 	assert.NoError(suite.T(), suite.db.ExpectationsWereMet())
 }
 
@@ -327,7 +330,7 @@ func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_NotFound() {
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "Crypto no encontrada en favoritos", response["error"])
+	assert.Equal(suite.T(), "Crypto not found in favorites", response["error"])
 }
 
 func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_MissingCryptoId() {
@@ -343,7 +346,7 @@ func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_MissingCryptoId() {
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "CryptoId es requerido", response["error"])
+	assert.Equal(suite.T(), "CryptoId is required", response["error"])
 }
 
 func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_NoAuth() {
@@ -377,7 +380,7 @@ func (suite *FavoritesHandlerTestSuite) TestDeleteFavorite_DBError() {
 
 	var response map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &response)
-	assert.Equal(suite.T(), "Error eliminando de BD", response["error"])
+	assert.Equal(suite.T(), "Error deleting from database", response["error"])
 }
 
 func TestFavoritesHandlerSuite(t *testing.T) {

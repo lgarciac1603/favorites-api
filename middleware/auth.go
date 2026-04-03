@@ -1,3 +1,4 @@
+// middleware/auth.go
 package middleware
 
 import (
@@ -7,34 +8,34 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// validate user's token
+// AuthMiddleware validates user's token
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// get auth header
+		// Get authorization header
 		authHeader := c.GetHeader("Authorization")
 
-		// validate header
+		// Validate header exists
 		if authHeader == "" {
-			c.JSON(401, gin.H{ "error": "Token not found" })
+			c.JSON(401, gin.H{"error": "Token not found"})
 			c.Abort()
 			return
 		}
 
+		// Validate Bearer token format
 		parts := strings.Split(authHeader, " ")
 		if len(parts) != 2 || parts[0] != "Bearer" {
-			c.JSON(401, gin.H{ "error": "Invalid token format" })
+			c.JSON(401, gin.H{"error": "Invalid token format"})
 			c.Abort()
 			return
 		}
 
 		token := parts[1]
 
-		/* TODO: validate with users API:
-		*	Simulates that all tokens are valid
-		*/
+		// TODO: validate with users API
+		// Currently simulates that all tokens are valid
 		userID, err := ValidateToken(token)
 		if err != nil {
-			c.JSON(401, gin.H{ "error": "Invalid token" })
+			c.JSON(401, gin.H{"error": "Invalid token"})
 			c.Abort()
 			return
 		}
@@ -44,9 +45,8 @@ func AuthMiddleware() gin.HandlerFunc {
 	}
 }
 
-/* TODO: Connect with users backend
-* ValidateToken to return userID
-*/
+// TODO: Connect with users backend
+// ValidateToken returns userID from token
 func ValidateToken(token string) (string, error) {
 	if token == "" {
 		return "", fmt.Errorf("empty token")

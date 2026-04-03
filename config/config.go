@@ -1,3 +1,4 @@
+// config/config.go
 package config
 
 import (
@@ -6,14 +7,15 @@ import (
 )
 
 type DatabaseConfig struct {
-	Host    string
-	Port    string
+	Host     string
+	Port     string
 	Database string
-	User    string
+	User     string
 	Password string
-	AppPort string
+	AppPort  string
 }
 
+// LoadConfig loads configuration from environment variables
 func LoadConfig() DatabaseConfig {
 	return DatabaseConfig{
 		Host:     getEnv("DB_HOST", "localhost"),
@@ -25,6 +27,7 @@ func LoadConfig() DatabaseConfig {
 	}
 }
 
+// GetConnectionString generates the PostgreSQL connection string
 func (c DatabaseConfig) GetConnectionString() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
@@ -36,6 +39,7 @@ func (c DatabaseConfig) GetConnectionString() string {
 	)
 }
 
+// getEnv retrieves an environment variable with a default value
 func getEnv(key, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value

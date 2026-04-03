@@ -13,15 +13,27 @@ import (
 
 func main() {
 	cfg := config.LoadConfig()
-	fmt.Printf("Conectando a PostgreSQL: %s:%s\n", cfg.Host, cfg.Port)
+	fmt.Printf("Connecting to PostgreSQL: %s:%s\n", cfg.Host, cfg.Port)
 
 	err := database.InitDB(cfg)
 	if err != nil {
-		log.Fatalf("Error inicializando BD: %v", err)
+		log.Fatalf("Error initializing database: %v", err)
 	}
 	defer database.CloseDB()
 
 	router := gin.Default()
+
+	// CORS Middleware
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type,Authorization")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+		c.Next()
+	})
 
 	favHandler := handlers.NewFavoritesHandler(database.DB)
 
@@ -33,6 +45,6 @@ func main() {
 		protected.DELETE("/:cryptoId", favHandler.DeleteFavorite)
 	}
 
-	fmt.Printf("Servidor escuchando en :%s\n", cfg.AppPort)
+	fmt.Printf("Server listening on :%s\n", cfg.AppPort)
 	router.Run(":" + cfg.AppPort)
 }
