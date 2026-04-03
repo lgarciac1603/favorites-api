@@ -1,4 +1,3 @@
-// main.go
 package main
 
 import (
@@ -24,7 +23,6 @@ func main() {
 
 	router := gin.Default()
 
-	// Create handler injecting DB
 	favHandler := handlers.NewFavoritesHandler(database.DB)
 
 	protected := router.Group("/favorites")
@@ -35,6 +33,6 @@ func main() {
 		protected.DELETE("/:cryptoId", favHandler.DeleteFavorite)
 	}
 
-	fmt.Println("Servidor escuchando en :8080")
-	router.Run(":8080")
+	fmt.Printf("Servidor escuchando en :%s\n", cfg.AppPort)
+	router.Run(":" + cfg.AppPort)
 }
