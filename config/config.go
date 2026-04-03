@@ -6,21 +6,21 @@ import (
 )
 
 type DatabaseConfig struct {
-	Host     string
-	Port     string
+	Host    string
+	Port    string
 	Database string
-	User     string
+	User    string
 	Password string
-	AppPort  string
+	AppPort string
 }
 
 func LoadConfig() DatabaseConfig {
 	return DatabaseConfig{
 		Host:     getEnv("DB_HOST", "localhost"),
 		Port:     getEnv("DB_PORT", "5432"),
-		Database: getEnv("DB_NAME", "apidb_favorites"),
-		User:     getEnv("DB_USER", "apiuser_favorites"),
-		Password: getEnv("DB_PASS", "apipass_favorites"),
+		Database: getEnv("DB_NAME", "apidb"),
+		User:     getEnv("DB_USER", "apiuser_test"),
+		Password: getEnv("DB_PASS", "apipass_test"),
 		AppPort:  getEnv("APP_PORT", "8090"),
 	}
 }
