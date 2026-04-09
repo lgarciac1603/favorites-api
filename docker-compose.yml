@@ -9,7 +9,7 @@ services:
       POSTGRES_USER: apiuser_test
       POSTGRES_PASSWORD: apipass_test
     ports:
-      - "8090:8090"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./database/migrations:/docker-entrypoint-initdb.d:ro
@@ -32,12 +32,13 @@ services:
     container_name: favorites-api
     environment:
       DB_HOST: postgres
-      DB_PORT: "8090"
+      DB_PORT: "5432"
       DB_NAME: apidb
       DB_USER: apiuser_test
       DB_PASS: apipass_test
       APP_PORT: "8090"
       CORS_ALLOW_ORIGIN: "*"
+      AUTH_API_URL: http://host.docker.internal:8080
     ports:
       - "8090:8090"
     depends_on:

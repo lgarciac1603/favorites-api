@@ -1,4 +1,3 @@
-// middleware/auth_test.go
 package middleware
 
 import (
@@ -15,17 +14,31 @@ type AuthMiddlewareTestSuite struct {
 	suite.Suite
 }
 
+func newAuthServer(status int, body string) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/me" {
+			http.NotFound(w, r)
+			return
+		}
+		w.WriteHeader(status)
+		_, _ = w.Write([]byte(body))
+	}))
+}
+
 func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_ValidToken() {
+	server := newAuthServer(200, `{"id":123}`)
+	defer server.Close()
+
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 	c.Request.Header.Set("Authorization", "Bearer user-123")
 
-	AuthMiddleware()(c)
+	AuthMiddleware(server.URL)(c)
 
 	userID, exists := c.Get("userID")
 	assert.True(suite.T(), exists)
-	assert.Equal(suite.T(), "user-123", userID)
+	assert.Equal(suite.T(), "123", userID)
 	assert.False(suite.T(), c.IsAborted())
 }
 
@@ -34,7 +47,7 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_NoToken() {
 	c, _ := gin.CreateTestContext(w)
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 
-	AuthMiddleware()(c)
+	AuthMiddleware("http://example")(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.True(suite.T(), c.IsAborted())
@@ -47,7 +60,7 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_InvalidFormat() {
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 	c.Request.Header.Set("Authorization", "InvalidFormat")
 
-	AuthMiddleware()(c)
+	AuthMiddleware("http://example")(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.True(suite.T(), c.IsAborted())
@@ -60,7 +73,7 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_MissingBearer() {
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 	c.Request.Header.Set("Authorization", "user-123")
 
-	AuthMiddleware()(c)
+	AuthMiddleware("http://example")(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.Contains(suite.T(), w.Body.String(), "Invalid token format")
@@ -72,58 +85,24 @@ func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_EmptyToken() {
 	c.Request = httptest.NewRequest("GET", "/test", nil)
 	c.Request.Header.Set("Authorization", "Bearer ")
 
-	AuthMiddleware()(c)
+	AuthMiddleware("http://example")(c)
 
 	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
 	assert.Contains(suite.T(), w.Body.String(), "Invalid token")
 }
 
-func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_TokenExtraction() {
-	token := "my-secret-token-12345"
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/test", nil)
-	c.Request.Header.Set("Authorization", "Bearer "+token)
-
-	AuthMiddleware()(c)
-
-	userID, exists := c.Get("userID")
-	assert.True(suite.T(), exists)
-	assert.Equal(suite.T(), token, userID)
-}
-
-func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_ContinuesToNextHandler() {
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/test", nil)
-	c.Request.Header.Set("Authorization", "Bearer valid-token")
-
-	AuthMiddleware()(c)
-
-	userID, _ := c.Get("userID")
-	assert.Equal(suite.T(), "valid-token", userID)
-}
-
-func (suite *AuthMiddlewareTestSuite) TestAuthMiddleware_MultipleSpaces() {
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
-	c.Request = httptest.NewRequest("GET", "/test", nil)
-	c.Request.Header.Set("Authorization", "Bearer  token-123")
-
-	AuthMiddleware()(c)
-
-	assert.Equal(suite.T(), http.StatusUnauthorized, w.Code)
-}
-
 func (suite *AuthMiddlewareTestSuite) TestValidateToken_ValidToken() {
-	userID, err := ValidateToken("test-token-123")
+	server := newAuthServer(200, `{"id":456}`)
+	defer server.Close()
+
+	userID, err := ValidateToken(server.URL, "test-token-123")
 
 	assert.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "test-token-123", userID)
+	assert.Equal(suite.T(), "456", userID)
 }
 
 func (suite *AuthMiddlewareTestSuite) TestValidateToken_EmptyToken() {
-	userID, err := ValidateToken("")
+	userID, err := ValidateToken("http://example", "")
 
 	assert.Error(suite.T(), err)
 	assert.Empty(suite.T(), userID)

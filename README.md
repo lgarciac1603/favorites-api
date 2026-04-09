@@ -1,6 +1,8 @@
 # Favorites API
 
-A production-ready REST API built with Go, Gin, and PostgreSQL that manages a user's favorite cryptocurrencies. This service operates as an auxiliary microservice alongside a primary authentication API (cpp-rest-api) and exposes protected endpoints for listing, adding, and removing cryptocurrency favorites.
+A production-ready REST API built with Go, Gin, and PostgreSQL that manages a user's favorite cryptocurrencies. This service operates as an **optional microservice** alongside [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api), the primary authentication and user management backend.
+
+> **Optional microservice**: `favorites-api` is not required for `cpp-rest-api` to function. You can run `cpp-rest-api` independently and add this microservice when you need favorites management. When running standalone, `favorites-api` requires `cpp-rest-api` to be reachable at `:8080` for token validation. When running as part of the full stack (via `crypto-dashboard`), both services are orchestrated automatically.
 
 ---
 
@@ -27,7 +29,9 @@ A production-ready REST API built with Go, Gin, and PostgreSQL that manages a us
 
 ## Overview
 
-Favorites API is an auxiliary microservice that complements a primary C++ REST API (cpp-rest-api). Its sole responsibility is managing the `user_favorites` table in a shared PostgreSQL instance. It does not handle user creation, login, or token issuance — those concerns remain entirely in cpp-rest-api.
+Favorites API is an **optional auxiliary microservice** that complements **cpp-rest-api**, a C++ REST service that owns user management and authentication. Its sole responsibility is managing the `user_favorites` table in a shared PostgreSQL instance. It does not handle user creation, login, or token issuance — those concerns remain entirely in `cpp-rest-api`.
+
+`cpp-rest-api` functions fully without this service. `favorites-api` is only needed when cryptocurrency favorites persistence is required.
 
 Core capabilities:
 
@@ -354,6 +358,31 @@ const body = await response.json();
 | 404  | Not found — the specified favorite does not exist for this user  |
 | 409  | Conflict — the cryptocurrency is already in the user's favorites |
 | 500  | Internal server error — database query or scan failure           |
+
+---
+
+## Deployment Modes
+
+### Standalone
+
+Run `favorites-api` independently with its own PostgreSQL instance.
+
+> **Requires cpp-rest-api running at `:8080`** — this service delegates JWT token validation to `cpp-rest-api`. Without it, all requests will fail authentication. Start `cpp-rest-api` first (either natively or via its own `docker compose up`), then run:
+
+```bash
+# From the favorites-api/ directory
+docker compose up --build
+```
+
+- Favorites API available at `http://localhost:8090`
+- PostgreSQL available at `localhost:5432`
+- `AUTH_API_URL` is set to `http://host.docker.internal:8080` in the compose file, which resolves to the host machine's `cpp-rest-api` from inside Docker (works on Docker Desktop for Windows and macOS)
+
+### Full Stack (via crypto-dashboard)
+
+When deployed as part of the full stack, `favorites-api` is orchestrated by `crypto-dashboard`'s `docker-compose.yml`. In this mode it shares a PostgreSQL instance with `cpp-rest-api` and both run on the same Docker network, so `AUTH_API_URL` is set to `http://cpp-rest-api:8080` and resolves correctly via Docker DNS.
+
+See the [crypto-dashboard repository](https://github.com/lgarciac1603/crypto-dashboard) for full setup instructions.
 
 ---
 

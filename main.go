@@ -38,7 +38,7 @@ func main() {
 	favHandler := handlers.NewFavoritesHandler(database.DB)
 
 	protected := router.Group("/favorites")
-	protected.Use(middleware.AuthMiddleware())
+	protected.Use(middleware.AuthMiddleware(cfg.AuthAPI))
 	{
 		protected.GET("", favHandler.GetFavorites)
 		protected.POST("", favHandler.PostFavorite)

@@ -16,8 +16,8 @@ type ConfigTestSuite struct {
 
 func (suite *ConfigTestSuite) SetupTest() {
 	suite.originalEnv = make(map[string]string)
-	envVars := []string{"DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASS", "APP_PORT"}
-	
+	envVars := []string{"DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASS", "APP_PORT", "AUTH_API_URL"}
+
 	for _, key := range envVars {
 		suite.originalEnv[key] = os.Getenv(key)
 	}
@@ -40,6 +40,7 @@ func (suite *ConfigTestSuite) TestLoadConfig_WithEnvVars() {
 	os.Setenv("DB_USER", "custom-user")
 	os.Setenv("DB_PASS", "custom-pass")
 	os.Setenv("APP_PORT", "9090")
+	os.Setenv("AUTH_API_URL", "http://auth.local")
 
 	cfg := LoadConfig()
 
@@ -49,6 +50,7 @@ func (suite *ConfigTestSuite) TestLoadConfig_WithEnvVars() {
 	assert.Equal(suite.T(), "custom-user", cfg.User)
 	assert.Equal(suite.T(), "custom-pass", cfg.Password)
 	assert.Equal(suite.T(), "9090", cfg.AppPort)
+	assert.Equal(suite.T(), "http://auth.local", cfg.AuthAPI)
 }
 
 func (suite *ConfigTestSuite) TestLoadConfig_WithDefaults() {
@@ -58,15 +60,17 @@ func (suite *ConfigTestSuite) TestLoadConfig_WithDefaults() {
 	os.Unsetenv("DB_USER")
 	os.Unsetenv("DB_PASS")
 	os.Unsetenv("APP_PORT")
+	os.Unsetenv("AUTH_API_URL")
 
 	cfg := LoadConfig()
 
 	assert.Equal(suite.T(), "localhost", cfg.Host)
-	assert.Equal(suite.T(), "8090", cfg.Port)
+	assert.Equal(suite.T(), "5432", cfg.Port)
 	assert.Equal(suite.T(), "apidb", cfg.Database)
 	assert.Equal(suite.T(), "apiuser_test", cfg.User)
 	assert.Equal(suite.T(), "apipass_test", cfg.Password)
 	assert.Equal(suite.T(), "8090", cfg.AppPort)
+	assert.Equal(suite.T(), "http://localhost:8080", cfg.AuthAPI)
 }
 
 func (suite *ConfigTestSuite) TestGetConnectionString() {
@@ -108,6 +112,7 @@ func (suite *ConfigTestSuite) TestConfigStruct_AllFieldsPresent() {
 		User:     "user",
 		Password: "pass",
 		AppPort:  "8090",
+		AuthAPI:  "http://auth.local",
 	}
 
 	assert.NotEmpty(suite.T(), cfg.Host)
@@ -116,6 +121,7 @@ func (suite *ConfigTestSuite) TestConfigStruct_AllFieldsPresent() {
 	assert.NotEmpty(suite.T(), cfg.User)
 	assert.NotEmpty(suite.T(), cfg.Password)
 	assert.NotEmpty(suite.T(), cfg.AppPort)
+	assert.NotEmpty(suite.T(), cfg.AuthAPI)
 }
 
 func TestConfigTestSuite(t *testing.T) {
