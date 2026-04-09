@@ -29,7 +29,7 @@ A production-ready REST API built with Go, Gin, and PostgreSQL that manages a us
 
 ## Overview
 
-Favorites API is an **optional auxiliary microservice** that complements **cpp-rest-api**, a C++ REST service that owns user management and authentication. Its sole responsibility is managing the `user_favorites` table in a shared PostgreSQL instance. It does not handle user creation, login, or token issuance — those concerns remain entirely in `cpp-rest-api`.
+Favorites API is an **optional auxiliary microservice** that complements **[cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api)**, a C++ REST service that owns user management and authentication. Its sole responsibility is managing the `user_favorites` table in a shared PostgreSQL instance. It does not handle user creation, login, or token issuance — those concerns remain entirely in `cpp-rest-api`.
 
 `cpp-rest-api` functions fully without this service. `favorites-api` is only needed when cryptocurrency favorites persistence is required.
 
@@ -590,9 +590,9 @@ make coverage-html
 
 ---
 
-## Integration with cpp-rest-api
+## Integration with [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api)
 
-Favorites API is designed to operate alongside **cpp-rest-api**, a C++ REST service that owns user management and authentication. The two services share the same PostgreSQL instance but maintain strict table-level separation.
+Favorites API is designed to operate alongside **[cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api)**, a C++ REST service that owns user management and authentication. The two services share the same PostgreSQL instance but maintain strict table-level separation.
 
 ### Architecture
 
@@ -645,9 +645,9 @@ Favorites API is designed to operate alongside **cpp-rest-api**, a C++ REST serv
    - Returns the result
 ```
 
-### Required Change in cpp-rest-api
+### Required Change in [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api)
 
-The only recommended addition to cpp-rest-api is the `user_favorites` table creation, placed in the database migration sequence:
+The only recommended addition to [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api) is the `user_favorites` table creation, placed in the database migration sequence:
 
 ```sql
 -- database/migrations/005-user-favorites.sql
@@ -667,7 +667,7 @@ CREATE INDEX IF NOT EXISTS idx_user_favorites_user_id ON user_favorites(user_id)
 COMMIT;
 ```
 
-No changes to the `users` table, authentication logic, or existing endpoints in cpp-rest-api are required.
+No changes to the `users` table, authentication logic, or existing endpoints in [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api) are required.
 
 ---
 
@@ -732,11 +732,11 @@ Client                      favorites-api              (future) cpp-rest-api
 
 **Current Middleware Behavior (Placeholder)**
 
-The `ValidateToken` function in `middleware/auth.go` currently accepts any non-empty string as a valid token and returns the raw token string as the `userID`. This is an intentional simplification to allow development without a running cpp-rest-api instance.
+The `ValidateToken` function in `middleware/auth.go` currently accepts any non-empty string as a valid token and returns the raw token string as the `userID`. This is an intentional simplification to allow development without a running [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api) instance.
 
 **Production Requirement**
 
-Before deploying to production, `ValidateToken` must be replaced with a real HTTP call to cpp-rest-api's token validation endpoint. The returned `userID` must be an integer that matches a row in the `users` table, and handlers must cast accordingly.
+Before deploying to production, `ValidateToken` must be replaced with a real HTTP call to [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api)'s token validation endpoint. The returned `userID` must be an integer that matches a row in the `users` table, and handlers must cast accordingly.
 
 ---
 
@@ -828,7 +828,7 @@ Repository: [https://github.com/lgarciac1603/favorites-api](https://github.com/l
 | PostgreSQL integration                  | Done    |
 | Testify-based test suite                | Done    |
 | Docker Compose setup                    | Done    |
-| Real JWT validation via cpp-rest-api    | Pending |
+| Real JWT validation via [cpp-rest-api](https://github.com/lgarciac1603/cpp-rest-api) | Pending |
 | Pagination for GET /favorites           | Pending |
 | Rate limiting                           | Pending |
 | OpenAPI / Swagger documentation         | Pending |
